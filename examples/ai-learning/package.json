@@ -1,0 +1,35 @@
+{
+	"name": "ai-learning",
+	"version": "1.0.16",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@ai-sdk/google": "^0.0.48",
+		"ai": "^3.4.7",
+		"arg": "^5.0.2",
+		"dotenv": "^16.4.5",
+		"hast-util-from-html": "^2.0.3",
+		"hast-util-select": "^6.0.2",
+		"hast-util-to-html": "^9.0.3",
+		"hast-util-to-string": "^3.0.0",
+		"playwright": "^1.40.1",
+		"tsx": "^4.19.1",
+		"unist-util-filter": "^5.0.1",
+		"webforai": "workspace:^",
+		"zod": "^3.23.8"
+	},
+	"devDependencies": {
+		"@tsconfig/recommended": "^1.0.3",
+		"@types/hast": "^3.0.2",
+		"@types/node": "^20.14.10",
+		"typescript": "^5.4.5"
+	}
+}
