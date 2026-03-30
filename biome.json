@@ -19,6 +19,9 @@
 		"enabled": true,
 		"rules": {
 			"all": true,
+			"suspicious": {
+				"noSkippedTests": "off"
+			},
 			"style": {
 				"useNamingConvention": {
 					"level": "warn",
