@@ -1,7 +1,7 @@
 <br/>
 
 <p align="right">
-  <a href="README_jp.md">日本語</a> / <a href="README.md">English</a>
+  <a href="#english">English</a> / <a href="#japanese">日本語</a>
 </p>
 
 <p align="center">
@@ -32,7 +32,11 @@
   </a>
 </p>
 
-## Features
+---
+
+## English
+
+### Features
 
 - **HTML to Markdown** - Convert any HTML to clean, readable Markdown
 - **HTML to MDAST** - Transform HTML into Markdown Abstract Syntax Tree for fine-grained control
@@ -42,13 +46,13 @@
 - **GFM Support** - Full GitHub Flavored Markdown support (tables, task lists, strikethrough, etc.)
 - **TypeScript** - Full TypeScript support
 
-## Installation
+### Installation
 
 ```bash
 npm install webforai
 ```
 
-## Quick Start
+### Quick Start
 
 ```bash
 npx webforai <url>
@@ -71,7 +75,7 @@ const markdown = htmlToMarkdown(html, { baseUrl: url });
 const mdast = htmlToMdast(html);
 ```
 
-## Loaders
+### Loaders
 
 | Loader | Use Case |
 |--------|----------|
@@ -80,9 +84,9 @@ const mdast = htmlToMdast(html);
 | `cf-puppeteer` | Cloudflare Workers environment |
 | `fetch` | Simple static HTML |
 
-## API
+### API
 
-### `htmlToMarkdown(html, options)`
+#### `htmlToMarkdown(html, options)`
 
 Convert HTML string to Markdown.
 
@@ -95,7 +99,7 @@ const markdown = htmlToMarkdown("<h1>Hello</h1><p>World</p>", {
 });
 ```
 
-### `htmlToMdast(html, options)`
+#### `htmlToMdast(html, options)`
 
 Convert HTML to MDAST (Markdown Abstract Syntax Tree).
 
@@ -105,7 +109,7 @@ import { htmlToMdast } from "webforai";
 const mdast = htmlToMdast("<h1>Hello</h1>");
 ```
 
-### `mdastToMarkdown(mdast, options)`
+#### `mdastToMarkdown(mdast, options)`
 
 Convert MDAST to Markdown string.
 
@@ -117,7 +121,7 @@ const markdown = mdastToMarkdown(mdast, {
 });
 ```
 
-### `mdastSplitter(markdown, options)`
+#### `mdastSplitter(markdown, options)`
 
 Split large markdown into smaller chunks.
 
@@ -130,7 +134,7 @@ const chunks = mdastSplitter(longMarkdown, {
 });
 ```
 
-## Cloudflare Workers
+### Cloudflare Workers
 
 ```ts
 import { htmlToMarkdown } from "webforai";
@@ -145,6 +149,127 @@ export default {
 };
 ```
 
-## License
+### License
+
+[Apache 2.0](/LICENSE) License
+
+---
+
+## Japanese
+
+### 機能
+
+- **HTML to Markdown** - 任意のHTMLをクリーンで読みやすいMarkdownに変換
+- **HTML to MDAST** - HTMLをMarkdown抽象構文木に変換し、詳細な制御が可能
+- **複数のローダー** - fetch、Playwright、Puppeteer、Cloudflare Workers（Puppeteer）をサポート
+- **コンテンツ抽出** - 組み込みの抽出器（takumiプリセット）で正確なコンテンツ抽出
+- **Markdown分割** - 大きなMarkdownをAIコンテキストウィンドウ用に小さなチャンクに分割
+- **GFMサポート** - GitHub Flavored Markdown完全サポート（テーブル、タスクリスト、取り消し線など）
+- **TypeScript** - 完全なTypeScriptサポート
+
+### インストール
+
+```bash
+npm install webforai
+```
+
+### クイックスタート
+
+```bash
+npx webforai <url>
+```
+
+またはコードで使用:
+
+```ts
+import { htmlToMarkdown, htmlToMdast } from "webforai";
+import { loadHtml } from "webforai/loaders/playwright";
+
+// URLからHTMLを読み込み
+const url = "https://example.com";
+const html = await loadHtml(url);
+
+// HTMLをMarkdownに変換
+const markdown = htmlToMarkdown(html, { baseUrl: url });
+
+// より詳細な制御が必要な場合はMDASTに変換
+const mdast = htmlToMdast(html);
+```
+
+### ローダー
+
+| ローダー | ユースケース |
+|----------|---------------|
+| `playwright` | JavaScriptで描画されるページ |
+| `puppeteer` | ヘッドレスChromeスクレイピング |
+| `cf-puppeteer` | Cloudflare Workers環境 |
+| `fetch` | 単純な静的HTML |
+
+### API
+
+#### `htmlToMarkdown(html, options)`
+
+HTML文字列をMarkdownに変換します。
+
+```ts
+import { htmlToMarkdown } from "webforai";
+
+const markdown = htmlToMarkdown("<h1>Hello</h1><p>World</p>", {
+  baseUrl: "https://example.com", // 相対URL解決用
+  gfm: true, // GitHub Flavored Markdown (デフォルト: true)
+});
+```
+
+#### `htmlToMdast(html, options)`
+
+HTMLをMDAST（Markdown抽象構文木）に変換します。
+
+```ts
+import { htmlToMdast } from "webforai";
+
+const mdast = htmlToMdast("<h1>Hello</h1>");
+```
+
+#### `mdastToMarkdown(mdast, options)`
+
+MDASTをMarkdown文字列に変換します。
+
+```ts
+import { mdastToMarkdown } from "webforai";
+
+const markdown = mdastToMarkdown(mdast, {
+  gfm: true,
+});
+```
+
+#### `mdastSplitter(markdown, options)`
+
+大きなMarkdownを小さなチャンクに分割します。
+
+```ts
+import { mdastSplitter } from "webforai";
+
+const chunks = mdastSplitter(longMarkdown, {
+  maxLength: 4000, // チャンクあたりの最大文字数
+  overlap: 200,    // チャンク間のオーバーラップ
+});
+```
+
+### Cloudflare Workers
+
+```ts
+import { htmlToMarkdown } from "webforai";
+import { loadHtml } from "webforai/loaders/cf-puppeteer";
+
+export default {
+  async fetch(request) {
+    const html = await loadHtml(request.url);
+    const markdown = htmlToMarkdown(html);
+    return new Response(markdown);
+  },
+};
+```
+
+### ライセンス
 
 [Apache 2.0](/LICENSE) License
