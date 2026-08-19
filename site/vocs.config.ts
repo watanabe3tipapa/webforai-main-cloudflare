@@ -3,8 +3,8 @@ import { version } from "../packages/webforai/package.json";
 
 // biome-ignore lint/style/noDefaultExport: This is a config file
 export default defineConfig({
-	title: "Webforai",
-	description: "A esm-native library that converts HTML to Markdown.",
+	title: "webforai — Web Content Prep",
+	description: "Prepare public web content as source-aware, LLM-ready Markdown.",
 	baseUrl: "/webforai-main-cloudflare",
 	logoUrl: {
 		light: "/images/logo-light.png",
@@ -15,7 +15,7 @@ export default defineConfig({
 		dark: "/images/logo-dark.png",
 	},
 	editLink: {
-		pattern: "https://github.com/inaridiy/webforai/edit/main/site/docs/pages/:path",
+		pattern: "https://github.com/watanabe3tipapa/webforai-main-cloudflare/edit/main/site/docs/pages/:path",
 		text: "Suggest changes to this page",
 	},
 	theme: {
@@ -25,19 +25,16 @@ export default defineConfig({
 		},
 	},
 	ogImageUrl: {
-		"/": "https://webforai.dev/api/ogp?logo=%logo&title=%title&description=%description",
+		"/": "https://webforai-site.kitesurf.workers.dev/api/ogp?logo=%logo&title=%title&description=%description",
 	},
 	socials: [
 		{
 			icon: "github",
-			link: "https://github.com/inaridiy/webforai",
-		},
-		{
-			icon: "x",
-			link: "https://twitter.com/inaridiy",
+			link: "https://github.com/watanabe3tipapa/webforai-main-cloudflare",
 		},
 	],
 	topNav: [
+		{ text: "Cloudflare Portal", link: "https://webforai-site.kitesurf.workers.dev/app/" },
 		{ text: "Getting Started", link: "/getting-started" },
 		{ text: "Cookbook", link: "/cookbook" },
 		{
@@ -45,16 +42,20 @@ export default defineConfig({
 			items: [
 				{
 					text: "Releases",
-					link: "https://github.com/inaridiy/webforai/releases",
+					link: "https://github.com/watanabe3tipapa/webforai-main-cloudflare/releases",
 				},
 				{
 					text: "Contributing",
-					link: "https://github.com/inaridiy/webforai",
+					link: "https://github.com/watanabe3tipapa/webforai-main-cloudflare",
 				},
 			],
 		},
 	],
 	sidebar: [
+		{
+			text: "Cloudflare Portal",
+			link: "/portal",
+		},
 		{
 			text: "Installation",
 			link: "/installation",

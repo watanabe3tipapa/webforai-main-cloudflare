@@ -6,118 +6,77 @@ content:
 
 import { HomePage } from "vocs/components";
 
-<div className="max-w-screen-lg mx-auto vp-doc relative px-6 mb-24 mt-8 md:px-0 md:mb-16">
-  <div className="pt-[48px] max-sm:pt-0">
-    <div className="max-sm:px-0 flex justify-between z-0 max-md:justify-center">
-      <div className="space-y-8 max-w-sm flex flex-col items-start max-md:items-center">
-          <img className="h-[72px] dark:invert-[1] max-sm:h-[60px] pr-6" src="/images/logo-full-light.svg" alt="viem logo" />
-        <div className="font-regular text-lg max-sm:text-base max-md:text-center">
-          A esm-native library that converts HTML to Markdown & Useful Utilities with simple, lightweight and epic quality.
-        </div>
-        <div className="flex justify-center space-x-2">
-          <HomePage.Button href="/getting-started" variant="accent">Get started</HomePage.Button>
-          <HomePage.Button href="/cookbook">Cookbook</HomePage.Button>
-          <HomePage.Button href="https://github.com/inaridiy/webforai">GitHub</HomePage.Button>
-        </div>
+<div className="lp-shell">
+  <section className="lp-hero">
+    <div className="lp-copy">
+      <p className="lp-eyebrow">OPEN-SOURCE WEB CONTENT PREP</p>
+      <h1>ウェブの本文を、<br />AI が使える知識へ。</h1>
+      <p className="lp-lead">webforai は、公開ウェブページの主コンテンツを取り出し、出典・変換条件・構造を保った <strong>LLM-ready Markdown</strong> に整えるためのオープンソース・ツールキットです。</p>
+      <div className="lp-actions">
+        <a className="lp-primary" href="https://webforai-site.kitesurf.workers.dev/app/">Cloudflare ポータルを開く</a>
+        <HomePage.Button href="/getting-started">SDK・CLI を使う</HomePage.Button>
+        <HomePage.Button href="https://github.com/watanabe3tipapa/webforai-main-cloudflare">GitHub</HomePage.Button>
       </div>
-      <div className="flex flex-col justify-between w-[440px] space-y-10 max-md:hidden">
-        <div id="home-install" className="h-full">
-
-:::code-group
-
-```bash [npm]
-npm i webforai
-# or just run
-npx webforai@latest
-```
-
-```bash [pnpm]
-pnpm i webforai
-# or just run
-pnpx webforai@latest
-```
-
-```bash [yarn]
-yarn add webforai
-# or just run
-npx webforai@latest
-```
-
-:::
-
-    </div>
-    <div className="flex justify-between items-center space-x-2">
-    <a href="https://github.com/inaridiy/webforai/blob/main/LICENSE" className="cursor-pointer h-[36px] max-w-[180px] flex-1 relative rounded-lg overflow-hidden border border-black/10 dark:border-white/20" style={{ color: 'inherit' }} rel="noreferrer noopener" target="_blank">
-      <div className="absolute flex z-[1] p-[6px] h-full w-full">
-        <div className="flex-1 bg-white/60 dark:bg-black/40 flex items-center w-full h-full rounded-md">
-          <span className="font-medium text-[15px] leading-none opacity-80 w-full text-center">license</span>
-        </div>
-        <div className="flex items-center h-full px-2">
-          <span className="font-medium text-[15px] leading-none text-center w-full text-black dark:text-white">Apache-2.0</span>
-        </div>
-      </div>
-      <div className="absolute left-0 right-0 top-0 bottom-0 bg-black/5 dark:bg-white/5 z-[0]" />
-      <div className="absolute left-0 right-0 top-0 bottom-0 backdrop-blur-[2px] backdrop-filter z-[0]" />
-    </a>
-    <a href="https://github.com/inaridiy/webforai/stargazers" className="cursor-pointer h-[36px] max-w-[120px] flex-1 relative rounded-lg overflow-hidden border border-black/10 dark:border-white/20" style={{ color: 'inherit' }} rel="noreferrer noopener" target="_blank">
-      <div className="absolute flex z-[1] p-[6px] h-full w-full">
-        <div className="flex-1 bg-white/60 dark:bg-black/40 flex items-center w-full h-full rounded-md">
-          <span className="font-medium text-[15px] opacity-80 leading-none w-full text-center">stars</span>
-        </div>
-        <div className="flex items-center h-full px-2">
-          <span className="font-medium text-[15px] text-center leading-none w-full text-black dark:text-white">46</span>
-        </div>
-      </div>
-      <div className="absolute left-0 right-0 top-0 bottom-0 bg-black/5 dark:bg-white/5 z-0" />
-      <div className="absolute left-0 right-0 top-0 bottom-0 backdrop-blur-[2px] backdrop-filter z-0" />
-    </a>
-    <div className="max-lg:hidden">
-    {" <= Let's star!"}
+      <p className="lp-caption">公開 URL、貼り付け HTML、Node.js、Cloudflare Workers に対応。認証ページや大規模クローリングは対象外です。</p>
     </div>
 
+    <div className="lp-workflow" aria-label="webforai の処理フロー">
+      <p className="lp-workflow-label">ONE JOB, DONE WELL</p>
+      <h2>「このページを AI に渡せる形にしたい」を、数秒で完了。</h2>
+      <ol>
+        <li><span>01</span><div><strong>取得</strong><p>公開 URL または HTML を入力します。</p></div></li>
+        <li><span>02</span><div><strong>整理</strong><p>本文中心に抽出し、Markdown 構造へ変換します。</p></div></li>
+        <li><span>03</span><div><strong>利用</strong><p>出典付き Markdown をコピー、保存、アプリへ組み込みます。</p></div></li>
+      </ol>
     </div>
-    </div>
-    </div>
+  </section>
 
-  </div>
+  <section className="lp-portal-banner">
+    <div>
+      <p className="lp-eyebrow">CLOUDFLARE WEB-UI PORTAL</p>
+      <h2>変換は、Cloudflare ポータルで。</h2>
+      <p>Web-UI ポータルは Cloudflare Worker 上で稼働します。URL または HTML を受け取り、サイズ・取得時間・公開 URL を検査してから、AI-ready または Reading モードの Markdown を返します。</p>
+    </div>
+    <a className="lp-secondary" href="https://webforai-site.kitesurf.workers.dev/app/">変換ポータルへ →</a>
+  </section>
 </div>
 
+<section className="max-w-screen-lg mx-auto vp-doc px-6 pb-16 md:px-8 md:pb-24">
 
+## 役割を明確に分ける
 
-<section className="max-w-screen-md mx-auto">
+| 場所 | 役割 | 利用者が得るもの |
+| --- | --- | --- |
+| **GitHub Pages** | プロダクト LP、導入ガイド、SDK / CLI / レシピのドキュメント | webforai が解く課題、使い方、ソースコードへの導線 |
+| **Cloudflare Worker ポータル** | URL / HTML を直接変換する Web-UI と API エッジ | LLM-ready Markdown のプレビュー、コピー、`.md` 保存、API 利用 |
+| **npm パッケージ** | アプリケーションに組み込める変換ライブラリ | TypeScript で再現可能な HTML → Markdown 処理 |
 
-#
-# Overview
+> **webforai の役割は、ウェブを収集し尽くすことではありません。** 公開された 1 ページを、次の AI 処理に渡せる、見通しのよい Markdown に準備することです。
 
-```ts twoslash
-import { htmlToMarkdown, htmlToMdast } from "webforai";
-import { loadHtml } from "webforai/loaders/playwright";
+## Cloudflare ポータルが返すもの
 
-// Load html from url
-const url = "https://www.npmjs.com/package/webforai";
-const html = await loadHtml(url); // [!code hl]
+変換ポータルは、YAML frontmatter に変換元 URL、変換モード、変換時刻を付与します。本文は用途に応じて二種類から選べます。**AI-ready** は主コンテンツを中心に画像・表・リンクの装飾を抑え、要約、分類、RAG の小さな入力に適します。**Reading** はリンク、画像、表の情報をできるだけ保持し、人が読み返す Markdown に適します。
 
-// Convert html to markdown
-const markdown = htmlToMarkdown(html, { baseUrl: url }); // [!code hl]
+ポータルは HTTP(S) の公開ドメインのみを受け付け、ローカルネットワーク、IP アドレス、認証情報付き URL、非標準ポート、過大な入力を拒否します。JavaScript 描画、ログイン、CAPTCHA が必要なページには対応しません。入力するページの利用規約とコンテンツ利用条件は、利用者が確認してください。
+
+[Cloudflare ポータルを開く →](https://webforai-site.kitesurf.workers.dev/app/)
+
+## アプリケーションへの組込み
+
+```ts
+import { htmlToMarkdown } from "webforai";
+
+const markdown = htmlToMarkdown(html, {
+  baseUrl: "https://example.com/article",
+  // デフォルトで本文抽出プリセット takumi を適用
+  linkAsText: true,
+  tableAsText: true,
+  hideImage: true,
+});
 ```
 
-#
-# Features
+Cloudflare ポータルの API は `POST /api/convert` です。`url` または `html` と、`ai` / `reading` の `mode` を JSON で送信すると、Markdown と変換メタデータを返します。
 
-- High-quality HTML to Markdown conversion with simple, customizable options
-- ESM-native, compatible with various environments (browser, Cloudflare Worker, Node.js, etc.)
-- Lightweight (only 146kb minified and gzipped)
-- Flexibility because it's built on [Syntax Tree](https://github.com/syntax-tree) ecosystem.
-- MathML to LaTeX with [mathml-to-latext](https://www.npmjs.com/package/mathml-to-latex) package.
-- Out-of-the-box loaders such as fetch, [playwright](https://www.npmjs.com/package/playwright), [puppeteer](https://www.npmjs.com/package/puppeteer).
-- CLI tool `npx webforai` for quick HTML to Markdown conversion
+[はじめる →](/getting-started) [Cloudflare Workers のレシピ →](/cookbook/cf-workers)
 
-</section>
-
-<section className="max-w-screen-md mx-auto">
-
-#
-# Sponsors
-
-::sponsors
 </section>

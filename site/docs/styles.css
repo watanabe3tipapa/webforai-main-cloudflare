@@ -1,20 +1,247 @@
-@layer vocs_preflight {
-  @tailwind base;
-}
-
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-#home-install .vocs_CodeGroup {
+:root {
+  --lp-ink: #101828;
+  --lp-muted: #475467;
+  --lp-line: #d0d5dd;
+  --lp-surface: #ffffff;
+  --lp-subtle: #f8fafc;
+  --lp-accent: #1769e0;
+  --lp-accent-strong: #0b4aab;
+}
+
+.dark {
+  --lp-ink: #f8fafc;
+  --lp-muted: #cbd5e1;
+  --lp-line: #344054;
+  --lp-surface: #101828;
+  --lp-subtle: #182230;
+  --lp-accent: #84adff;
+  --lp-accent-strong: #bfd3ff;
+}
+
+.lp-shell {
+  width: min(1180px, calc(100% - 3rem));
+  margin: 0 auto;
+  color: var(--lp-ink);
+}
+
+.lp-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 7rem);
+  padding: clamp(4rem, 9vw, 8rem) 0 clamp(4rem, 8vw, 7rem);
+}
+
+.lp-hero::before {
+  position: absolute;
+  z-index: -1;
+  top: 4rem;
+  right: -8rem;
+  width: 29rem;
+  height: 29rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lp-accent) 12%, transparent);
+  content: "";
+  filter: blur(34px);
+}
+
+.lp-eyebrow,
+.lp-workflow-label {
+  margin: 0;
+  color: var(--lp-accent);
+  font-size: 0.73rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+}
+
+.lp-copy h1 {
+  max-width: 780px;
+  margin: 1rem 0 0;
+  color: var(--lp-ink);
+  font-size: clamp(3rem, 7vw, 6.2rem);
+  font-weight: 720;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+
+.lp-lead {
+  max-width: 690px;
+  margin: 1.7rem 0 0;
+  color: var(--lp-muted);
+  font-size: 1.1rem;
+  line-height: 1.78;
+}
+
+.lp-actions {
   display: flex;
-  height: 100%;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+  margin-top: 2rem;
 }
 
-#home-install .vocs_Tabs_content {
-  flex: 1;
+.lp-primary,
+.lp-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  border-radius: 0.6rem;
+  background: var(--lp-accent);
+  color: #fff !important;
+  font-size: 0.92rem;
+  font-weight: 760;
+  text-decoration: none !important;
+  transition: background 140ms ease, transform 140ms ease;
 }
 
-#home-install .vocs_Code {
-  font-size: 18px;
+.lp-primary {
+  padding: 0 1.05rem;
+}
+
+.lp-primary:hover,
+.lp-secondary:hover {
+  background: var(--lp-accent-strong);
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.lp-caption {
+  max-width: 610px;
+  margin: 1.2rem 0 0;
+  color: var(--lp-muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.lp-workflow {
+  padding: 1.55rem;
+  border: 1px solid var(--lp-line);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--lp-surface) 94%, transparent);
+  box-shadow: 0 24px 54px color-mix(in srgb, var(--lp-ink) 8%, transparent);
+}
+
+.lp-workflow h2 {
+  margin: 0.8rem 0 1.45rem;
+  color: var(--lp-ink);
+  font-size: 1.42rem;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.lp-workflow ol {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-workflow li {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.85rem;
+  border-radius: 0.7rem;
+  background: var(--lp-subtle);
+}
+
+.lp-workflow li > span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--lp-accent) 12%, var(--lp-surface));
+  color: var(--lp-accent);
+  font-size: 0.69rem;
+  font-weight: 850;
+}
+
+.lp-workflow strong {
+  color: var(--lp-ink);
+  font-size: 0.9rem;
+}
+
+.lp-workflow p {
+  margin: 0.2rem 0 0;
+  color: var(--lp-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.lp-portal-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 0 0 5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid color-mix(in srgb, var(--lp-accent) 35%, var(--lp-line));
+  border-radius: 1.15rem;
+  background: linear-gradient(105deg, color-mix(in srgb, var(--lp-accent) 10%, var(--lp-surface)), var(--lp-surface));
+}
+
+.lp-portal-banner h2 {
+  margin: 0.55rem 0 0;
+  color: var(--lp-ink);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  letter-spacing: -0.04em;
+}
+
+.lp-portal-banner p:not(.lp-eyebrow) {
+  max-width: 750px;
+  margin: 0.75rem 0 0;
+  color: var(--lp-muted);
+  line-height: 1.7;
+}
+
+.lp-secondary {
+  flex-shrink: 0;
+  padding: 0 1.1rem;
+}
+
+@media (max-width: 820px) {
+  .lp-shell {
+    width: min(100% - 2.5rem, 1180px);
+  }
+
+  .lp-hero {
+    grid-template-columns: 1fr;
+    gap: 2.4rem;
+  }
+
+  .lp-workflow {
+    max-width: 590px;
+  }
+
+  .lp-portal-banner {
+    display: block;
+  }
+
+  .lp-secondary {
+    width: fit-content;
+    margin-top: 1.3rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .lp-shell {
+    width: min(100% - 2rem, 1180px);
+  }
+
+  .lp-actions {
+    align-items: stretch;
+  }
+
+  .lp-primary {
+    width: 100%;
+  }
 }

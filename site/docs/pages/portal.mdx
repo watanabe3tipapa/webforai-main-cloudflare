@@ -1,0 +1,53 @@
+---
+title: Cloudflare Portal
+---
+
+# Cloudflare Portal
+
+GitHub Pages は webforai の **LP とドキュメント**、Cloudflare Worker は実際に URL / HTML を変換する **Web-UI ポータルと API エッジ**です。ポータルは次の URL で公開します。
+
+[ポータルを開く](https://webforai-site.kitesurf.workers.dev/app/)
+
+## Web-UI の使い方
+
+公開 URL または HTML を入力し、目的に合うモードを選んでください。**AI-ready** は主コンテンツを中心に、画像・表・リンクの装飾を抑えます。要約、分類、RAG の小さな入力に適します。**Reading** はリンク、画像、表をできるだけ保持します。変換結果には出典、変換モード、変換時刻を含む YAML frontmatter が付与され、画面からコピーまたは `.md` として保存できます。
+
+> 公開コンテンツのみを対象にしてください。ポータルはローカルネットワーク、IP アドレス、認証情報付き URL、非標準ポート、過大な入力を拒否します。JavaScript 描画、ログイン、CAPTCHA を必要とするページは対応範囲外です。コンテンツの利用条件は入力者が確認してください。
+
+## API
+
+ポータルと同じ Worker は、`POST /api/convert` で JSON API を提供します。本文は `url` または `html` のどちらか一方だけを指定します。
+
+```bash
+curl -X POST https://webforai-site.kitesurf.workers.dev/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/article",
+    "mode": "ai"
+  }'
+```
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| `url` | `string` | HTTP(S) の公開ドメイン上にある変換元 URL。`html` と排他的です。 |
+| `html` | `string` | 最大 1.5MB の HTML 文字列。`url` と排他的です。 |
+| `mode` | `"ai" \| "reading"` | 出力の目的。未指定時は `ai` です。 |
+
+成功時には、変換済みの `markdown`、`title`、URL 入力時の `sourceUrl`、変換前後の文字数、`estimatedTokens`、`mode` を返します。入力が不正な場合は `400`、ポータルの安全条件または取得・変換条件を満たさない場合は `422` を返します。
+
+## デプロイ
+
+GitHub Pages は `main` ブランチへの push を契機に、既存の GitHub Actions ワークフローが `site/docs/dist` を公開します。Cloudflare ポータルは、同じ `site` ディレクトリから別途 Worker としてデプロイします。
+
+```bash
+# リポジトリ直下
+pnpm install --frozen-lockfile
+pnpm --filter site build
+
+# Cloudflare へ認証後、Worker を公開
+cd site
+pnpm exec wrangler login
+pnpm worker:deploy
+```
+
+Worker 名は `site/wrangler.toml` の `webforai-site` です。`workers.dev` のアカウント・サブドメインが `kitesurf` と異なる場合は、GitHub Pages 側の `site/docs/pages/index.mdx` と `site/vocs.config.ts` にあるポータル URL を、実際の Worker URL に合わせて変更してください。
