@@ -3,3 +3,6 @@ dist
 .npmrc
 .DS_Store
 .wrangler
+
+# Local Cloudflare Worker configuration derived from the committed example.
+site/wrangler.selfhost.toml

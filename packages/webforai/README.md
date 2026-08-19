@@ -80,11 +80,16 @@ API とオプションの詳細は、[API リファレンス](https://watanabe3t
 Cloudflare Worker で URL / HTML を Markdown に変換する Web-UI と `POST /api/convert` の実装を、このリポジトリの `site` に含めています。**ホスト済みの Web-UI ポータルは現在公開準備中です。** 現時点では、Worker を自分の Cloudflare アカウントへデプロイして利用できます。
 
 ```bash
+# リポジトリ直下で静的アセットを生成します。
+pnpm --filter site build
+
 cd site
-pnpm worker:deploy
+cp wrangler.selfhost.toml.example wrangler.selfhost.toml
+# wrangler.selfhost.toml の name を自分用に変更します。
+pnpm exec wrangler deploy --config wrangler.selfhost.toml
 ```
 
-公開 URL の検査、ローカルネットワークの拒否、入力サイズ制限、AI-ready / Reading モードなどの仕様は、[Cloudflare Portal ガイド](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/)に記載しています。
+公開 URL の検査、ローカルネットワークの拒否、入力サイズ制限、AI-ready / Reading モード、ローカル実行・Custom Domain の手順は、[Cloudflare Portal ガイド](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/)に記載しています。
 
 ## プロジェクトを開発する
 

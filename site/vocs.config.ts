@@ -25,9 +25,6 @@ export default defineConfig({
 			dark: "#4db8ff",
 		},
 	},
-	ogImageUrl: {
-		"/": "https://webforai-site.kitesurf.workers.dev/api/ogp?logo=%logo&title=%title&description=%description",
-	},
 	socials: [
 		{
 			icon: "github",

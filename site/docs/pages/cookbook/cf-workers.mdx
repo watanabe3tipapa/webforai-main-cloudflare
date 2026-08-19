@@ -1,207 +1,72 @@
 ---
-title: HTML to Markdown Conversion with Browser Rendering
-authors:
- - "[Your Name]"
-date: 2024-03-15
+title: Cloudflare Worker をセルフホストする
 ---
 
-# HTML to Markdown Conversion with Browser Rendering
+# Cloudflare Worker をセルフホストする
 
-::authors
-This guide demonstrates how to create a Cloudflare Worker that converts HTML to Markdown using browser rendering. It utilizes Cloudflare's Browser Rendering API, Durable Objects, and the webforai library.
+webforai には、公開 URL または HTML を Markdown に変換する Cloudflare Worker 実装が含まれています。このレシピでは、現在の `/app/` Web-UI と `POST /api/convert` を自分の Cloudflare アカウントへ公開します。
 
-::::steps
-## Create a new Worker project
+> この Worker は `fetch` で取得できる公開コンテンツを対象にします。Cloudflare Browser Rendering、Durable Objects、Browser Rendering API の設定は必要ありません。JavaScript 描画が必要なページを扱う場合は、アプリケーション側で Playwright / Puppeteer ローダーを選択してください。
 
-Start by creating a new Cloudflare Worker project:
+## 1. アセットをビルドする
 
-```bash
-npm create cloudflare@latest
-```
-
-Follow the prompts to set up your project. Choose a project name like "html-to-markdown-worker".
-
-## Install dependencies
-
-Install the necessary packages:
+Worker は `site/docs/dist` の静的アセットも同時に公開します。先に依存関係をインストールして Vocs をビルドしてください。
 
 ```bash
-npm install @cloudflare/puppeteer hono @hono/valibot-validator valibot webforai
+# リポジトリ直下
+pnpm install --frozen-lockfile
+pnpm --filter site build
 ```
 
-## Configure wrangler.toml
+## 2. Worker 名を設定する
 
-Update your `wrangler.toml` file to include the Browser Rendering API binding and Durable Object:
-
-```toml
-name = "html-to-markdown-worker"
-main = "src/index.ts"
-compatibility_date = "2024-03-15"
-
-# Browser Rendering API binding
-browser = { binding = "MYBROWSER" }
-
-# Binding to a Durable Object
-[[durable_objects.bindings]]
-name = "BROWSER"
-class_name = "BrowserDO"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["BrowserDO"]
-```
-
-## Create the main Worker script
-
-Create a file named `src/index.ts` and add the following code:
-
-```typescript [src/index.ts]
-import { DurableObject } from "cloudflare:workers";
-import puppeteer from "@cloudflare/puppeteer";
-import { vValidator } from "@hono/valibot-validator";
-import { Hono } from "hono";
-import { cache } from "hono/cache";
-import { url, literal, object, optional, string, union } from "valibot";
-import { htmlToMarkdown } from "webforai";
-
-type Bindings = { MYBROWSER: puppeteer.BrowserWorker; BROWSER: DurableObjectNamespace<BrowserDO> };
-
-const app = new Hono<{ Bindings: Bindings }>();
-
-const BROWSER_KEYS = ["browser1", "browser2"];
-
-const schema = object({
-  url: string([url()]),
-  mode: optional(union([literal("readability"), literal("ai")])),
-});
-
-app.get(
-  "/",
-  cache({ cacheName: "html-to-markdown", cacheControl: "max-age=3600" }),
-  vValidator("query", schema),
-  async (c) => {
-    const { url, mode } = c.req.valid("query");
-
-    const pickedKey = BROWSER_KEYS[Math.floor(Math.random() * BROWSER_KEYS.length)];
-    const browser = c.env.BROWSER.get(c.env.BROWSER.idFromName(pickedKey));
-    const result = await browser.renderUrl(url);
-
-    if (!result.success) {
-      return c.text(result.error, 500);
-    }
-
-    const aiModeOptions = { linkAsText: true, tableAsText: true, hideImage: true };
-    const readabilityModeOptions = { linkAsText: false, tableAsText: false, hideImage: false };
-    const markdown = htmlToMarkdown(result.html, {
-      baseUrl: url,
-      ...(mode === "ai" ? aiModeOptions : readabilityModeOptions),
-    });
-    return c.text(markdown);
-  },
-);
-
-export default app;
-```
-
-## Create the Durable Object
-
-In the same `src/index.ts` file, add the following code for the Durable Object:
-
-```typescript [src/index.ts]
-...existing code
-
-const KEEP_BROWSER_ALIVE_IN_SECONDS = 60;
-
-export class BrowserDO extends DurableObject<Bindings> {
-  private browser: puppeteer.Browser | null = null;
-  private keptAliveInSeconds = 0;
-
-  async renderUrl(url: string): Promise<{ success: true; html: string } | { success: false; error: string }> {
-    const normalizedUrl = new URL(url).toString();
-
-    try {
-      if (!this.browser?.isConnected()) {
-        const sessions = await puppeteer.sessions(this.env.MYBROWSER);
-        const freeSession = sessions.find((s) => !s.connectionId);
-        if (freeSession) {
-          this.browser = await puppeteer.connect(this.env.MYBROWSER, freeSession.sessionId);
-        } else {
-          this.browser = await puppeteer.launch(this.env.MYBROWSER);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      return { success: false, error: "Failed to launch browser" };
-    }
-
-    this.keptAliveInSeconds = 0;
-    const page = await this.browser.newPage();
-    await page.goto(normalizedUrl, { waitUntil: "networkidle0" });
-
-    await page.evaluate(() => {
-      const scripts = document.querySelectorAll("script");
-      for (const script of Array.from(scripts)) {
-        script.remove();
-      }
-    });
-
-    const html = await page.content();
-
-    const cleanup = async () => {
-      await page.close();
-      this.keptAliveInSeconds = 0;
-      const currentAlarm = await this.ctx.storage.getAlarm();
-      if (currentAlarm) {
-        return;
-      }
-      const tenSeconds = 10 * 1000;
-      await this.ctx.storage.setAlarm(Date.now() + tenSeconds);
-    };
-    this.ctx.waitUntil(cleanup());
-
-    return { success: true, html };
-  }
-
-  async alarm() {
-    this.keptAliveInSeconds += 10;
-    if (this.keptAliveInSeconds < KEEP_BROWSER_ALIVE_IN_SECONDS) {
-      await this.ctx.storage.setAlarm(Date.now() + 10 * 1000);
-      if (this.browser?.isConnected()) {
-        await this.browser.version();
-      }
-    } else {
-      await this.browser?.close();
-      this.browser = null;
-    }
-  }
-}
-```
-
-## Deploy the Worker
-
-Deploy your Worker to Cloudflare's global network:
+`site/wrangler.selfhost.toml.example` をコピーし、自分の Cloudflare アカウント内で一意な `name` を設定します。コピー先は Git の管理対象外です。
 
 ```bash
-npx wrangler deploy
+cd site
+cp wrangler.selfhost.toml.example wrangler.selfhost.toml
 ```
 
-## Use your Worker
+`wrangler.selfhost.toml` の `name` は、`<worker-name>.<account-subdomain>.workers.dev` の Worker 名部分になります。
 
-After deployment, you can call your Worker by making a GET request to its URL with a `url` query parameter:
+## 3. ローカルで試す
 
+```bash
+pnpm worker:dev
 ```
-https://your-worker-url.workers.dev/?url=https://example.com&mode=readability
+
+表示されたローカル URL で、次を確認します。
+
+| URL | 確認内容 |
+| --- | --- |
+| `/app/` | URL / HTML 入力、AI-ready / Reading モード、コピー・保存機能。 |
+| `/api/convert` | JSON API が `markdown` と出典情報を返すこと。 |
+| `/` | 静的ドキュメントが配信されること。 |
+
+## 4. Cloudflare へ公開する
+
+ブラウザーで認証できる環境では `wrangler login` を一度実行します。その後、専用設定を指定してデプロイしてください。
+
+```bash
+pnpm exec wrangler login
+pnpm exec wrangler deploy --config wrangler.selfhost.toml
 ```
 
-This will return the Markdown version of the specified URL's content.
+`workers.dev` URL を確認する場合は、デプロイ結果に出力された URL に `/app/` を追加します。
 
-::::
+```text
+https://<worker-name>.<account-subdomain>.workers.dev/app/
+```
 
-This Worker provides an API endpoint that converts HTML pages to Markdown using browser rendering. It supports two modes: "readability" (default) and "ai", which affect how links, tables, and images are processed in the output Markdown.
+## 5. API を確認する
 
-The Durable Object manages browser sessions, improving performance by reusing sessions and reducing the number of concurrent sessions needed.
+```bash
+curl -X POST https://<worker-name>.<account-subdomain>.workers.dev/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<article><h1>Hello</h1><p>Prepared for AI.</p></article>",
+    "mode": "ai"
+  }'
+```
 
-## References
-
-- [Cloudflare Browser Rendering](https://developers.cloudflare.com/browser-rendering/)
-- [HonoJS Docs](https://hono.dev/)
+本番で限定公開にする場合は、Cloudflare Access などのアクセス制御を先に設定してください。Custom Domain、API の仕様、安全制約、CI でのデプロイ前提は、[Cloudflare Portal ガイド](/portal)にまとめています。

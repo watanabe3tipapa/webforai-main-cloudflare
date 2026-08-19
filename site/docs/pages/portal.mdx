@@ -2,25 +2,100 @@
 title: Cloudflare Portal
 ---
 
-# Cloudflare Portal
+# Cloudflare Portal をセルフホストする
 
-GitHub Pages は webforai の **LP とドキュメント**、Cloudflare Worker は実際に URL / HTML を変換する **Web-UI ポータルと API エッジ**です。
+webforai の Cloudflare Worker は、公開 URL または HTML を **LLM-ready Markdown** に変換する Web-UI と API を提供します。GitHub Pages はプロダクト紹介とドキュメントの入口であり、Worker は `/app/` の変換画面と `/api/convert` を実行するエッジです。
 
-> **公開状況:** Web-UI ポータルは現在、Cloudflare へのデプロイ準備中です。公開前に 404 ページへ誘導しないよう、LP の CTA は SDK / CLI 導入とポータルのセットアップガイドに分けています。
+> **ホスト済みの共用ポータルは公開準備中です。** 現在は、このリポジトリから自分の Cloudflare アカウントへデプロイして利用してください。Worker 名、URL、ドメインは利用者自身が管理します。
 
-## Web-UI の使い方
+## 構成と公開先
 
-公開 URL または HTML を入力し、目的に合うモードを選んでください。**AI-ready** は主コンテンツを中心に、画像・表・リンクの装飾を抑えます。要約、分類、RAG の小さな入力に適します。**Reading** はリンク、画像、表をできるだけ保持します。変換結果には出典、変換モード、変換時刻を含む YAML frontmatter が付与され、画面からコピーまたは `.md` として保存できます。
+`site/workers/index.tsx` が Web-UI と API を処理し、`site/docs/dist` の静的ドキュメントを Worker の Static Assets として同時に配信します。`pnpm worker:deploy` は Worker コードと生成済みアセットをまとめて公開します。[1]
 
-> 公開コンテンツのみを対象にしてください。ポータルはローカルネットワーク、IP アドレス、認証情報付き URL、非標準ポート、過大な入力を拒否します。JavaScript 描画、ログイン、CAPTCHA を必要とするページは対応範囲外です。コンテンツの利用条件は入力者が確認してください。
+| パス | 役割 |
+| --- | --- |
+| `/app/` | URL / HTML を入力して Markdown を作る Web-UI。 |
+| `/api/convert` | JSON を受け取る変換 API。 |
+| `/` ほか | `site/docs/dist` に含まれる静的ドキュメント。 |
+
+初回は `workers.dev` URL で動作を確認できます。URL は `https://<worker-name>.<account-subdomain>.workers.dev` の形式です。業務上重要な運用では、Cloudflare の Custom Domain または Workers Route を使うことを推奨します。[2]
+
+## 前提条件
+
+Cloudflare アカウント、Node.js 18 以上、pnpm が必要です。ローカル認証にはブラウザーを使う `wrangler login`、CI には Cloudflare API Token を利用できます。トークンをリポジトリへ記録しないでください。
+
+この Worker が要求する Cloudflare バインディングは Static Assets の `ASSETS` だけです。データベース、R2、Durable Objects、Browser Rendering、シークレットの設定は、現行の変換ポータルには不要です。
+
+## 最短のデプロイ手順
+
+リポジトリを取得後、依存関係を固定バージョンでインストールし、まず Vocs の静的アセットを生成します。アセットがない状態では Worker のデプロイは完了しません。
+
+```bash
+# リポジトリ直下
+pnpm install --frozen-lockfile
+pnpm --filter site build
+```
+
+続けて Cloudflare へログインし、`site` ディレクトリから公開します。既定の Worker 名は `webforai-content-prep` です。同じ Cloudflare アカウント内で名前が重複する場合は、次節の専用設定を使用してください。
+
+```bash
+cd site
+pnpm exec wrangler login
+pnpm worker:deploy
+```
+
+デプロイ完了後、出力された `workers.dev` URL に `/app/` を付けて Web-UI を開きます。
+
+```text
+https://<worker-name>.<account-subdomain>.workers.dev/app/
+```
+
+`wrangler deploy` は、未設定のアカウントサブドメインがある場合に初回の設定を案内します。[3]
+
+## Worker 名を自分用に設定する
+
+共有リポジトリを使う場合や、環境ごとに Worker を分ける場合は、コミット済みのテンプレートからローカル設定を作成してください。`wrangler.selfhost.toml` は `.gitignore` に含まれているため、利用者固有の名前や将来追加する設定を誤ってコミットしません。
+
+```bash
+cd site
+cp wrangler.selfhost.toml.example wrangler.selfhost.toml
+# wrangler.selfhost.toml の name を一意の名前へ変更します。
+pnpm exec wrangler deploy --config wrangler.selfhost.toml
+```
+
+テンプレートは既定のアセット優先ルーティングを使います。静的ドキュメントに一致する URL はアセットとして配信され、一致しない `/app/` と `/api/convert` は Worker が処理します。これにより、変換ポータルと API を静的ドキュメントと同じデプロイへ含められます。[1]
+
+Custom Domain または Workers Route を設定した後に `workers.dev` を公開したくない場合は、ローカル設定で `workers_dev = false` に変更して再デプロイしてください。ドメイン・ルートの作成は Cloudflare Dashboard で行うか、利用組織の IaC 方針に従って管理してください。[2]
+
+## ローカルで確認する
+
+本番公開の前に、同じアセット構成で Worker を起動します。`wrangler dev` が表示する URL で `/app/` と API を確認できます。
+
+```bash
+# リポジトリ直下で一度だけ実行
+pnpm --filter site build
+
+cd site
+pnpm worker:dev
+```
+
+別のターミナルから、HTML を渡す最小のスモークテストを実行できます。
+
+```bash
+curl -X POST http://localhost:8787/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<article><h1>Hello</h1><p>Prepared for AI.</p></article>",
+    "mode": "ai"
+  }'
+```
 
 ## API
 
-ポータルと同じ Worker は、`POST /api/convert` で JSON API を提供します。本文は `url` または `html` のどちらか一方だけを指定します。
+ポータルと同じ Worker は、`POST /api/convert` で JSON API を提供します。本文は `url` または `html` の**どちらか一方だけ**を指定します。
 
 ```bash
-# Worker のデプロイ後、実際の Worker URL に置き換えてください。
-curl -X POST https://<worker-subdomain>.workers.dev/api/convert \
+curl -X POST https://<worker-name>.<account-subdomain>.workers.dev/api/convert \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com/article",
@@ -30,25 +105,20 @@ curl -X POST https://<worker-subdomain>.workers.dev/api/convert \
 
 | 項目 | 型 | 説明 |
 | --- | --- | --- |
-| `url` | `string` | HTTP(S) の公開ドメイン上にある変換元 URL。`html` と排他的です。 |
+| `url` | `string` | HTTP(S) の公開ドメインにある変換元 URL。`html` と排他的です。 |
 | `html` | `string` | 最大 1.5MB の HTML 文字列。`url` と排他的です。 |
 | `mode` | `"ai" \| "reading"` | 出力の目的。未指定時は `ai` です。 |
 
-成功時には、変換済みの `markdown`、`title`、URL 入力時の `sourceUrl`、変換前後の文字数、`estimatedTokens`、`mode` を返します。入力が不正な場合は `400`、ポータルの安全条件または取得・変換条件を満たさない場合は `422` を返します。
+成功時には、`markdown`、`title`、URL 入力時の `sourceUrl`、変換前後の文字数、`estimatedTokens`、`mode` を返します。不正な入力は `400`、安全条件または取得・変換条件を満たさない入力は `422` を返します。
 
-## デプロイ
+## 利用時の注意
 
-GitHub Pages は `main` ブランチへの push を契機に、既存の GitHub Actions ワークフローが `site/docs/dist` を公開します。Cloudflare ポータルは、同じ `site` ディレクトリから別途 Worker としてデプロイします。
+この Worker は、`localhost`、IP アドレス、認証情報付き URL、非標準ポート、1.5MB を超える入力を拒否します。JavaScript 描画、ログイン、CAPTCHA を必要とするページは対象外です。入力するコンテンツの利用規約と利用条件は、利用者自身で確認してください。
 
-```bash
-# リポジトリ直下
-pnpm install --frozen-lockfile
-pnpm --filter site build
+公開する API は、第三者からも利用できるエンドポイントになります。限定した利用者にのみ提供する場合は、公開前に Cloudflare Access などのアクセス制御を設定してください。アカウントの利用上限・コスト・監視は、Cloudflare Dashboard で運用してください。
 
-# Cloudflare へ認証後、Worker を公開
-cd site
-pnpm exec wrangler login
-pnpm worker:deploy
-```
+## References
 
-Worker 名は `site/wrangler.toml` の `webforai-site` です。`workers.dev` のアカウント・サブドメインが `kitesurf` と異なる場合は、GitHub Pages 側の `site/docs/pages/index.mdx` と `site/vocs.config.ts` にあるポータル URL を、実際の Worker URL に合わせて変更してください。
+[1]: https://developers.cloudflare.com/workers/static-assets/binding/ "Cloudflare Workers — Static Assets binding"
+[2]: https://developers.cloudflare.com/workers/configuration/routing/workers-dev/ "Cloudflare Workers — workers.dev"
+[3]: https://developers.cloudflare.com/workers/get-started/guide/ "Cloudflare Workers — Get started with the CLI"

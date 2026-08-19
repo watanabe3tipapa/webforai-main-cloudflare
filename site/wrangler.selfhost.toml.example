@@ -1,0 +1,25 @@
+#:schema node_modules/wrangler/config-schema.json
+# Copy this file to `wrangler.selfhost.toml`, then replace the Worker name.
+# Deploy with: pnpm exec wrangler deploy --config wrangler.selfhost.toml
+
+# Use only lowercase letters, digits, and dashes. The name becomes part of
+# <worker-name>.<your-account-subdomain>.workers.dev.
+name = "my-webforai-content-prep"
+main = "workers/index.tsx"
+compatibility_date = "2024-10-18"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[assets]
+# Build the static documentation first: pnpm --filter site build
+directory = "./docs/dist"
+binding = "ASSETS"
+# Static asset URLs are served first. Requests with no matching asset, such as
+# `/app/` and `/api/convert`, are handled by the Worker script.
+
+[observability]
+enabled = true
+
+# For production, add a Custom Domain or Workers Route in the Cloudflare
+# dashboard or as Wrangler configuration, then set `workers_dev = false` if
+# the public workers.dev URL is not required.

@@ -80,11 +80,16 @@ See the [API reference](https://watanabe3tipapa.github.io/webforai-main-cloudfla
 This repository includes a Cloudflare Worker implementation in `site`. It provides a Web UI and a `POST /api/convert` endpoint for converting a URL or HTML to Markdown. **The hosted Web UI portal is currently being prepared for public release.** You can deploy the Worker to your own Cloudflare account today.
 
 ```bash
+# From the repository root, generate the static assets first.
+pnpm --filter site build
+
 cd site
-pnpm worker:deploy
+cp wrangler.selfhost.toml.example wrangler.selfhost.toml
+# Change `name` in wrangler.selfhost.toml to your own Worker name.
+pnpm exec wrangler deploy --config wrangler.selfhost.toml
 ```
 
-The [Cloudflare Portal guide](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/) documents URL validation, local-network restrictions, input limits, and the AI-ready / Reading modes.
+The [Cloudflare Portal guide](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/) documents local development, URL validation, local-network restrictions, input limits, AI-ready / Reading modes, and Custom Domain deployment.
 
 ## Develop this repository
 

@@ -1,12 +1,19 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "webforai-site"
+# デフォルトの Worker 名です。実運用では `wrangler.selfhost.toml.example` をコピーし、
+# 自分のアカウント内で一意の Worker 名へ変更してデプロイしてください。
+name = "webforai-content-prep"
 main = "workers/index.tsx"
 compatibility_date = "2024-10-18"
 compatibility_flags = ["nodejs_compat"]
-assets = { directory = "./docs/dist", binding = "ASSETS" }
+# workers.dev は最初の確認に便利です。業務利用では Custom Domain または Workers Route を推奨します。
+workers_dev = true
 
+[assets]
+# `pnpm --filter site build` が生成する Vocs の静的ドキュメントです。
+directory = "./docs/dist"
+# OGP 生成など、Worker からのアセット参照に使用します。
+binding = "ASSETS"
 # Workers Logs
-# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
-# Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
+# https://developers.cloudflare.com/workers/observability/logs/workers-logs/
 [observability]
 enabled = true
