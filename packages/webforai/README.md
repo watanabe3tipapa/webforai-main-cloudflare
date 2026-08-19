@@ -1,275 +1,119 @@
-<br/>
+# webforai
 
-<p align="right">
-  <a href="#english">English</a> / <a href="#japanese">日本語</a>
-</p>
+**日本語** / [English](https://github.com/watanabe3tipapa/webforai-main-cloudflare/blob/main/README.en.md)
 
-<p align="center">
-  <a href="https://webforai.dev">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://webforai.dev/images/logo-full-dark.svg">
-      <img alt="webforai logo" src="https://webforai.dev/images/logo-full-light.svg" width="auto" height="40">
-    </picture>
-  </a>
-</p>
+> **公開ウェブページを、AI が扱いやすい Markdown へ整える。**
+>
+> webforai は、HTML から主コンテンツを取り出し、見出し・リンク・コードなどの意味を保った **LLM-ready Markdown** または **MDAST** に変換する、TypeScript 向けの Web Content Prep ツールキットです。
 
-<p align="center">
-  A powerful HTML to Markdown converter for AI applications
-<p>
+[ドキュメント](https://watanabe3tipapa.github.io/webforai-main-cloudflare/) · [はじめる](https://watanabe3tipapa.github.io/webforai-main-cloudflare/getting-started/) · [npm](https://www.npmjs.com/package/webforai) · [GitHub](https://github.com/watanabe3tipapa/webforai-main-cloudflare)
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/webforai">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/webforai?style=flat">
-      <img src="https://img.shields.io/npm/v/webforai?style=flat" alt="Version">
-    </picture>
-  </a>
-  <a href="https://github.com/inaridiy/webforai/blob/main/LICENSE">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/l/webforai?style=flat">
-      <img src="https://img.shields.io/npm/l/webforai?style=flat" alt="Apache License">
-    </picture>
-  </a>
-</p>
+## 何を解決するのか
 
----
+ウェブページをそのまま AI に渡すと、ナビゲーション、Cookie バナー、フッター、装飾要素が文脈を埋めてしまいます。webforai は、コンテンツの中心を取り出し、次の AI 処理へ渡しやすい構造に整えます。大規模なクローリングを行うための製品ではなく、**公開された 1 ページを、見通しのよい入力へ準備する**ためのライブラリです。
 
-## English
+| できること | 得られるもの |
+| --- | --- |
+| 本文を優先して抽出する | 記事・ドキュメントの中心を扱いやすい Markdown に変換できます。 |
+| HTML を Markdown / MDAST に変換する | 文字列出力にも、独自パイプラインへつなぐ構造化データにも対応します。 |
+| 表現を用途に合わせる | リンク、表、画像などの扱いを選び、入力情報の密度を調整できます。 |
+| 取得方法を選ぶ | 静的 HTML の `fetch`、ブラウザー描画が必要な Playwright / Puppeteer、Cloudflare Workers 向けローダーを利用できます。 |
 
-### Features
+## まず試す
 
-- **HTML to Markdown** - Convert any HTML to clean, readable Markdown
-- **HTML to MDAST** - Transform HTML into Markdown Abstract Syntax Tree for fine-grained control
-- **Multiple Loaders** - Support for fetch, Playwright, Puppeteer, and Cloudflare Workers (Puppeteer)
-- **Content Extraction** - Built-in extractors (takumi preset) for precise content extraction
-- **Markdown Splitting** - Split large markdown into smaller chunks for AI context windows
-- **GFM Support** - Full GitHub Flavored Markdown support (tables, task lists, strikethrough, etc.)
-- **TypeScript** - Full TypeScript support
-
-### Installation
+Node.js 18 以上で利用できます。パッケージを追加し、CLI またはライブラリから変換を開始してください。
 
 ```bash
 npm install webforai
+
+# 対話形式で URL を Markdown へ変換します。
+npx webforai@latest https://example.com/article
 ```
 
-### Quick Start
-
-```bash
-npx webforai <url>
-```
-
-Or use it in your code:
+ライブラリとして使う場合は、すでに取得済みの HTML をそのまま渡せます。
 
 ```ts
-import { htmlToMarkdown, htmlToMdast } from "webforai";
-import { loadHtml } from "webforai/loaders/playwright";
+import { htmlToMarkdown } from "webforai";
 
-// Load HTML from URL
-const url = "https://example.com";
-const html = await loadHtml(url);
+const html = `
+  <article>
+    <h1>Building with AI</h1>
+    <p>Useful context lives here.</p>
+  </article>
+`;
 
-// Convert HTML to Markdown
-const markdown = htmlToMarkdown(html, { baseUrl: url });
+const markdown = htmlToMarkdown(html, {
+  baseUrl: "https://example.com/article",
+});
 
-// Or convert to MDAST for more control
+console.log(markdown);
+```
+
+> URL から HTML を読み込む方法、CLI の対話フロー、Playwright / Puppeteer の利用方法は、[導入ガイド](https://watanabe3tipapa.github.io/webforai-main-cloudflare/getting-started/)を参照してください。
+
+## どんな場面で使うか
+
+| ワークフロー | webforai の役割 |
+| --- | --- |
+| RAG の取込み | 本文中心の Markdown を作り、分割・埋め込み・検索の前処理を整えます。 |
+| 調査・要約・翻訳 | ページの見出し構造とリンク文脈を保ち、モデルに渡す入力のばらつきを抑えます。 |
+| 独自アプリへの組込み | MDAST を含む変換パイプラインを利用し、抽出・分類・構造化を自分の処理に合わせます。 |
+
+レシピは、[構造化出力](https://watanabe3tipapa.github.io/webforai-main-cloudflare/cookbook/structured-output/) と [翻訳](https://watanabe3tipapa.github.io/webforai-main-cloudflare/cookbook/translation/) から確認できます。
+
+## 出力をコントロールする
+
+webforai は HTML → HAST → MDAST → Markdown の変換パイプラインを提供します。標準の `takumi` 抽出プリセットは、記事やコンテンツ領域を手がかりに周辺要素を抑えます。さらに、`htmlToMdast` と `mdastToMarkdown` を使えば、変換途中の構造を独自に扱えます。
+
+```ts
+import { htmlToMdast, mdastToMarkdown } from "webforai";
+
 const mdast = htmlToMdast(html);
+// ここで独自の抽出・変換・分割を実行できます。
+const markdown = mdastToMarkdown(mdast);
 ```
 
-### Loaders
+API とオプションの詳細は、[API リファレンス](https://watanabe3tipapa.github.io/webforai-main-cloudflare/docs/html-to-markdown/)を参照してください。
 
-| Loader | Use Case |
-|--------|----------|
-| `playwright` | JavaScript-rendered pages |
-| `puppeteer` | Headless Chrome scraping |
-| `cf-puppeteer` | Cloudflare Workers environment |
-| `fetch` | Simple static HTML |
+## Cloudflare Workers と Web-UI ポータル
 
-### API
-
-#### `htmlToMarkdown(html, options)`
-
-Convert HTML string to Markdown.
-
-```ts
-import { htmlToMarkdown } from "webforai";
-
-const markdown = htmlToMarkdown("<h1>Hello</h1><p>World</p>", {
-  baseUrl: "https://example.com", // for resolving relative URLs
-  gfm: true, // GitHub Flavored Markdown (default: true)
-});
-```
-
-#### `htmlToMdast(html, options)`
-
-Convert HTML to MDAST (Markdown Abstract Syntax Tree).
-
-```ts
-import { htmlToMdast } from "webforai";
-
-const mdast = htmlToMdast("<h1>Hello</h1>");
-```
-
-#### `mdastToMarkdown(mdast, options)`
-
-Convert MDAST to Markdown string.
-
-```ts
-import { mdastToMarkdown } from "webforai";
-
-const markdown = mdastToMarkdown(mdast, {
-  gfm: true,
-});
-```
-
-#### `mdastSplitter(markdown, options)`
-
-Split large markdown into smaller chunks.
-
-```ts
-import { mdastSplitter } from "webforai";
-
-const chunks = mdastSplitter(longMarkdown, {
-  maxLength: 4000, // max characters per chunk
-  overlap: 200,    // overlap between chunks
-});
-```
-
-### Cloudflare Workers
-
-```ts
-import { htmlToMarkdown } from "webforai";
-import { loadHtml } from "webforai/loaders/cf-puppeteer";
-
-export default {
-  async fetch(request) {
-    const html = await loadHtml(request.url);
-    const markdown = htmlToMarkdown(html);
-    return new Response(markdown);
-  },
-};
-```
-
-### License
-
-[Apache 2.0](/LICENSE) License
-
----
-
-## Japanese
-
-### 機能
-
-- **HTML to Markdown** - 任意のHTMLをクリーンで読みやすいMarkdownに変換
-- **HTML to MDAST** - HTMLをMarkdown抽象構文木に変換し、詳細な制御が可能
-- **複数のローダー** - fetch、Playwright、Puppeteer、Cloudflare Workers（Puppeteer）をサポート
-- **コンテンツ抽出** - 組み込みの抽出器（takumiプリセット）で正確なコンテンツ抽出
-- **Markdown分割** - 大きなMarkdownをAIコンテキストウィンドウ用に小さなチャンクに分割
-- **GFMサポート** - GitHub Flavored Markdown完全サポート（テーブル、タスクリスト、取り消し線など）
-- **TypeScript** - 完全なTypeScriptサポート
-
-### インストール
+Cloudflare Worker で URL / HTML を Markdown に変換する Web-UI と `POST /api/convert` の実装を、このリポジトリの `site` に含めています。**ホスト済みの Web-UI ポータルは現在公開準備中です。** 現時点では、Worker を自分の Cloudflare アカウントへデプロイして利用できます。
 
 ```bash
-npm install webforai
+cd site
+pnpm worker:deploy
 ```
 
-### クイックスタート
+公開 URL の検査、ローカルネットワークの拒否、入力サイズ制限、AI-ready / Reading モードなどの仕様は、[Cloudflare Portal ガイド](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/)に記載しています。
+
+## プロジェクトを開発する
+
+このリポジトリは pnpm ワークスペースです。依存関係をインストールすると、ライブラリのビルドが実行されます。
 
 ```bash
-npx webforai <url>
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
 
-またはコードで使用:
+サイトは `site` ディレクトリで開発・ビルドできます。
 
-```ts
-import { htmlToMarkdown, htmlToMdast } from "webforai";
-import { loadHtml } from "webforai/loaders/playwright";
-
-// URLからHTMLを読み込み
-const url = "https://example.com";
-const html = await loadHtml(url);
-
-// HTMLをMarkdownに変換
-const markdown = htmlToMarkdown(html, { baseUrl: url });
-
-// より詳細な制御が必要な場合はMDASTに変換
-const mdast = htmlToMdast(html);
+```bash
+cd site
+pnpm dev
+pnpm build
 ```
 
-### ローダー
+## ドキュメント
 
-| ローダー | ユースケース |
-|----------|---------------|
-| `playwright` | JavaScriptで描画されるページ |
-| `puppeteer` | ヘッドレスChromeスクレイピング |
-| `cf-puppeteer` | Cloudflare Workers環境 |
-| `fetch` | 単純な静的HTML |
+| 内容 | リンク |
+| --- | --- |
+| プロダクト概要と導入 | [GitHub Pages](https://watanabe3tipapa.github.io/webforai-main-cloudflare/) |
+| SDK / CLI の導入 | [Getting Started](https://watanabe3tipapa.github.io/webforai-main-cloudflare/getting-started/) |
+| レシピ | [Cookbook](https://watanabe3tipapa.github.io/webforai-main-cloudflare/cookbook/) |
+| Cloudflare Worker | [Portal ガイド](https://watanabe3tipapa.github.io/webforai-main-cloudflare/portal/) |
 
-### API
+## ライセンス
 
-#### `htmlToMarkdown(html, options)`
-
-HTML文字列をMarkdownに変換します。
-
-```ts
-import { htmlToMarkdown } from "webforai";
-
-const markdown = htmlToMarkdown("<h1>Hello</h1><p>World</p>", {
-  baseUrl: "https://example.com", // 相対URL解決用
-  gfm: true, // GitHub Flavored Markdown (デフォルト: true)
-});
-```
-
-#### `htmlToMdast(html, options)`
-
-HTMLをMDAST（Markdown抽象構文木）に変換します。
-
-```ts
-import { htmlToMdast } from "webforai";
-
-const mdast = htmlToMdast("<h1>Hello</h1>");
-```
-
-#### `mdastToMarkdown(mdast, options)`
-
-MDASTをMarkdown文字列に変換します。
-
-```ts
-import { mdastToMarkdown } from "webforai";
-
-const markdown = mdastToMarkdown(mdast, {
-  gfm: true,
-});
-```
-
-#### `mdastSplitter(markdown, options)`
-
-大きなMarkdownを小さなチャンクに分割します。
-
-```ts
-import { mdastSplitter } from "webforai";
-
-const chunks = mdastSplitter(longMarkdown, {
-  maxLength: 4000, // チャンクあたりの最大文字数
-  overlap: 200,    // チャンク間のオーバーラップ
-});
-```
-
-### Cloudflare Workers
-
-```ts
-import { htmlToMarkdown } from "webforai";
-import { loadHtml } from "webforai/loaders/cf-puppeteer";
-
-export default {
-  async fetch(request) {
-    const html = await loadHtml(request.url);
-    const markdown = htmlToMarkdown(html);
-    return new Response(markdown);
-  },
-};
-```
-
-### ライセンス
-
-[Apache 2.0](/LICENSE) License
+[Apache License 2.0](https://github.com/watanabe3tipapa/webforai-main-cloudflare/blob/main/LICENSE) の下で公開しています。
