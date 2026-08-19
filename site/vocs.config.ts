@@ -5,7 +5,8 @@ import { version } from "../packages/webforai/package.json";
 export default defineConfig({
 	title: "webforai — Web Content Prep",
 	description: "Prepare public web content as source-aware, LLM-ready Markdown.",
-	baseUrl: "/webforai-main-cloudflare",
+	basePath: "/webforai-main-cloudflare",
+	baseUrl: "https://watanabe3tipapa.github.io",
 	logoUrl: {
 		light: "/images/logo-full-light.svg",
 		dark: "/images/logo-full-dark.svg",
