@@ -55,6 +55,10 @@ export default defineConfig({
 			link: "/portal",
 		},
 		{
+			text: "API とアクセス制御",
+			link: "/api-security",
+		},
+		{
 			text: "Installation",
 			link: "/installation",
 		},

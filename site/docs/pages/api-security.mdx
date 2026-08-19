@@ -1,0 +1,138 @@
+---
+title: API とアクセス制御
+---
+
+# API とアクセス制御
+
+`POST /api/convert` は、公開 URL または HTML を受け取り、出典を含む Markdown を返す変換 API です。URL を取得する機能を持つため、**公開運用では API の利用者と呼び出し量を明確に制御してください。** このページは、現行実装の契約と、安全にセルフホストするためのアクセス制御モデルを区別して説明します。
+
+> **現行の既定状態:** 認証・利用者別認可・レート制限は Worker コードに含まれていません。`workers.dev` または Custom Domain を公開しただけでは、`/api/convert` はインターネットから呼び出せます。限定利用では、最初に Cloudflare Access を Worker の前段へ設定してください。
+
+## API 契約
+
+| 項目 | 内容 |
+| --- | --- |
+| メソッドとパス | `POST /api/convert` |
+| リクエスト形式 | `Content-Type: application/json` |
+| 入力 | `url` または `html` の**どちらか一方**と、任意の `mode` |
+| 成功時 | JSON 形式で Markdown、出典、文字数、推定トークン数を返す |
+| 応答ヘッダー | すべての `/api/convert` 応答に `Cache-Control: no-store` と `X-Content-Type-Options: nosniff` を返します。変換結果を共有キャッシュさせず、JSON の MIME スニッフィングを防ぎます。 |
+
+### リクエスト
+
+| フィールド | 型 | 制約 | 説明 |
+| --- | --- | --- | --- |
+| `url` | `string` | 最大 2,048 文字。`html` と排他的。 | 取得して変換する HTTP(S) の公開 URL。 |
+| `html` | `string` | 1 文字以上、最大 1,500,000 文字。`url` と排他的。 | 直接変換する HTML。 |
+| `mode` | `"ai" \| "reading"` | 任意。既定は `"ai"`。 | 出力の情報密度を選びます。 |
+
+`ai` モードはリンク・表・画像の装飾を抑え、プロンプト、要約、分類、RAG の小さな入力向けにします。`reading` モードは、それらの情報をできるだけ保持します。
+
+```bash
+curl -X POST https://<worker-name>.<account-subdomain>.workers.dev/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/article",
+    "mode": "ai"
+  }'
+```
+
+### レスポンス
+
+成功時は HTTP `200` で次の JSON を返します。`markdown` の先頭には YAML frontmatter が付き、タイトル、URL 入力時の出典、モード、変換時刻を記録します。
+
+```json
+{
+  "markdown": "---\ntitle: \"Example Domain\"\nsource: \"https://example.com/\"\nprepared_with: \"webforai\"\nmode: ai\nconverted_at: \"2026-08-19T00:00:00.000Z\"\n---\n\n# Example Domain\n",
+  "title": "Example Domain",
+  "sourceUrl": "https://example.com/",
+  "inputCharacters": 1256,
+  "outputCharacters": 802,
+  "estimatedTokens": 201,
+  "mode": "ai"
+}
+```
+
+`estimatedTokens` は出力文字数を 4 で割る簡易推定であり、特定モデルの課金トークン数ではありません。HTML を直接渡した場合、`sourceUrl` は返りません。
+
+### エラー
+
+| HTTP ステータス | 発生条件 | 応答例 |
+| --- | --- | --- |
+| `400` | JSON として読めない、`url` と `html` が未指定、両方指定、列挙外の `mode`、入力長超過。 | `{ "error": "URL または HTML を入力してください。" }` |
+| `422` | URL の安全条件違反、取得失敗、取得先のコンテンツ種別不正、ページサイズ超過、変換失敗。 | `{ "error": "ローカルネットワーク、IP アドレス、または認証情報を含む URL は利用できません。" }` |
+
+API はエラーの原因を利用者へ返します。管理画面・ログ・監視にリクエスト本文や URL を保存する場合は、入力データが利用者の管理対象情報になり得ることを前提に、保持期間と閲覧権限を決めてください。
+
+## URL 取得時の安全境界
+
+この Worker は任意 URL を取得するため、サーバーサイドリクエストフォージェリ（SSRF）を抑える基本的な入口制限を実装しています。
+
+| 制御 | 現行の挙動 |
+| --- | --- |
+| スキーム | `http:` と `https:` だけを許可します。 |
+| ホスト名 | `localhost`、`.localhost`、`.local`、IPv4 / IPv6 リテラルを拒否します。 |
+| 認証情報 | URL に username / password が含まれる場合は拒否します。 |
+| ポート | `80` と `443` 以外を拒否します。 |
+| リダイレクト | 最終 URL を同じ条件で再検査します。 |
+| タイムアウト | 外部取得は 12 秒で中断します。 |
+| コンテンツ種別 | `text/html`、`application/xhtml+xml`、`text/markdown` だけを受け入れます。 |
+| サイズ | `Content-Length` と実本文の双方で 1.5MB を上限にします。 |
+
+これらはリスクを減らしますが、アクセス制御、レート制限、コンテンツの利用許諾、すべてのネットワーク上の危険を代替するものではありません。特に DNS の応答や外部サイトのふるまいは Worker の外側にあります。限定された利用者だけに公開し、監視と利用上限を運用してください。
+
+## アクセス制御の選び方
+
+Cloudflare Access は Worker が実行される**前**にリクエストを認可します。Worker 単位で保護すると、`workers.dev`、Custom Domain、Workers Route、preview を含むその Worker のすべての公開先を対象にできます。特定のホスト名またはパスだけを保護する Access アプリケーションも作成できます。[1]
+
+| 想定する利用者 | 推奨構成 | 注意点 |
+| --- | --- | --- |
+| 社内・少人数の Web-UI 利用 | **Worker 全体**を Cloudflare Access で保護し、メールドメインまたは Cloudflare アカウントメンバーを許可します。 | `/app/` と API の利用者を同じ境界にでき、もっとも単純です。 |
+| CI・バックエンドからの自動変換 | Access の **Service Auth** policy と Service Token を使います。 | Client ID と Client Secret は CI のシークレットにのみ保存し、ブラウザーやリポジトリに置きません。[2] |
+| UI は公開、API だけを限定 | Custom Domain または明確な hostname / path に対し、`/api/*` の Access アプリを作成します。 | ポータルは HTML の Access 応答を認証案内として表示しますが、ブラウザー利用の導線と Service Token を使う自動化クライアントの双方を必ず検証してください。 |
+| 公開デモ | Access を付けない代わりに、レート制限・濫用監視・コスト上限を Cloudflare 側で設計します。 | 現行 Worker コードだけでは、利用者の識別もリクエスト上限も行いません。 |
+
+### Worker 全体を限定公開する
+
+Cloudflare Dashboard の **Workers & Pages** で対象 Worker を選び、**Access** タブから **Protect this Worker behind Access** を選択します。`All traffic` を選び、許可するメールドメイン、Cloudflare アカウントメンバー、または組織の ID プロバイダーに基づく policy を設定してください。[1]
+
+この方式では `/app/` と `/api/convert` が同じ Access 境界に入ります。ブラウザー利用者は Cloudflare のログイン画面を経由し、認可済みの利用者だけがポータルを開けます。
+
+### 自動化クライアントを認可する
+
+人ではないクライアントには、Zero Trust の **Access controls → Service credentials → Service Tokens** で Service Token を作成し、対象 Access policy に `Service Auth` を設定します。クライアントは次の 2 ヘッダーを送ります。[2]
+
+```bash
+curl -X POST https://<worker-name>.<account-subdomain>.workers.dev/api/convert \
+  -H "CF-Access-Client-Id: <client-id>" \
+  -H "CF-Access-Client-Secret: <client-secret>" \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<article><h1>Private input</h1></article>","mode":"ai"}'
+```
+
+Service Token には有効期限があります。期限監視、定期的な更新、不要になったトークンの削除を運用に含めてください。Service Token は Cloudflare の管理 API 用 API Token とは異なり、保護済みアプリケーションへ入るためのクライアント資格情報です。
+
+## Worker 内の認可と監査
+
+現行 Worker は Access の ID を読み取らず、`Cf-Access-Jwt-Assertion` を検証もしません。Access を前段で有効にすれば未認証者を通さない構成にはできますが、**利用者別のロール、テナント別の制限、変換履歴の監査、利用量の上限**を Worker コードが実装しているわけではありません。
+
+こうした要件がある場合は、Access が渡す JWT を署名、issuer、audience まで検証するか、Workers ランタイムの `ctx.access` から認可済み ID を取得する実装を追加してください。Access JWT は `Cf-Access-Jwt-Assertion` ヘッダーで受け取り、Cloudflare One team の公開鍵とアプリケーションの AUD tag で検証します。[1] [3]
+
+> JWT の存在だけを確認して認可済みと判断してはいけません。JWT を実装内で使う場合は、署名、issuer、audience、期限を検証し、鍵ローテーションを前提に JWKS を取得・キャッシュしてください。[3]
+
+## 公開前チェックリスト
+
+| 確認事項 | 限定ポータル | 公開デモ |
+| --- | --- | --- |
+| Access policy を設定し、未認証時の挙動を確認した | 必須 | 任意 |
+| Service Token を CI のシークレットに保存し、期限・失効手順を決めた | 自動化時は必須 | 原則不要 |
+| `/app/`、`/api/convert`、Custom Domain の各経路を確認した | 必須 | 必須 |
+| 変換量、失敗、`422` 応答を監視する | 必須 | 必須 |
+| レート制限とコスト上限を設計した | 推奨 | 必須 |
+| 入力 URL と出力 Markdown の保存方針を決めた | 必須 | 必須 |
+
+## References
+
+[1]: https://developers.cloudflare.com/workers/configuration/cloudflare-access/ "Cloudflare Workers — Cloudflare Access"
+[2]: https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/ "Cloudflare One — Service tokens"
+[3]: https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/ "Cloudflare One — Validate JWTs"

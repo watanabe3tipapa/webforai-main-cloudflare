@@ -109,7 +109,7 @@ curl -X POST https://<worker-name>.<account-subdomain>.workers.dev/api/convert \
 | `html` | `string` | 最大 1.5MB の HTML 文字列。`url` と排他的です。 |
 | `mode` | `"ai" \| "reading"` | 出力の目的。未指定時は `ai` です。 |
 
-成功時には、`markdown`、`title`、URL 入力時の `sourceUrl`、変換前後の文字数、`estimatedTokens`、`mode` を返します。不正な入力は `400`、安全条件または取得・変換条件を満たさない入力は `422` を返します。
+成功時には、`markdown`、`title`、URL 入力時の `sourceUrl`、変換前後の文字数、`estimatedTokens`、`mode` を返します。不正な入力は `400`、安全条件または取得・変換条件を満たさない入力は `422` を返します。入力制約、レスポンス、URL 取得時の安全境界、Cloudflare Access と Service Token の選び方は、[API とアクセス制御](/api-security)を参照してください。
 
 ## 利用時の注意
 

@@ -6,6 +6,10 @@ import { z } from "zod";
 const MAX_INPUT_CHARACTERS = 1_500_000;
 const FETCH_TIMEOUT_MS = 12_000;
 const USER_AGENT = "webforai-content-prep/1.0 (+https://webforai.dev)";
+const API_RESPONSE_HEADERS = {
+	"Cache-Control": "no-store",
+	"X-Content-Type-Options": "nosniff",
+};
 
 type ConversionMode = "ai" | "reading";
 
@@ -309,8 +313,12 @@ const PORTAL_HTML = `<!doctype html>
           const mode = document.querySelector("input[name=mode]:checked").value;
           const payload = inputKind === "url" ? { url: urlInput.value, mode } : { html: htmlInput.value, mode };
           const response = await fetch("/api/convert", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-          const data = await response.json();
-          if (!response.ok || !data.markdown) throw new Error(data.error || "変換に失敗しました。もう一度お試しください。");
+          const contentType = response.headers.get("content-type") || "";
+          const data = contentType.includes("application/json") ? await response.json() : null;
+          if (!response.ok || !data?.markdown) {
+            const message = data?.error || (contentType.includes("text/html") ? "この API は認証が必要です。Cloudflare Access でサインインしてから、もう一度お試しください。" : "変換に失敗しました。もう一度お試しください。");
+            throw new Error(message);
+          }
           latestResult = data;
           title.textContent = data.title;
           resultContent.className = "";
@@ -351,23 +359,24 @@ app.post("/api/convert", async (context) => {
 	try {
 		body = await context.req.json();
 	} catch {
-		return context.json({ error: "JSON 形式のリクエスト本文を指定してください。" }, 400);
+		return context.json({ error: "JSON 形式のリクエスト本文を指定してください。" }, 400, API_RESPONSE_HEADERS);
 	}
 
 	const parsed = conversionSchema.safeParse(body);
 	if (!parsed.success) {
-		return context.json({ error: parsed.error.issues[0]?.message || "入力を確認してください。" }, 400);
+		return context.json(
+			{ error: parsed.error.issues[0]?.message || "入力を確認してください。" },
+			400,
+			API_RESPONSE_HEADERS,
+		);
 	}
 
 	try {
 		const result = await prepareMarkdown(parsed.data);
-		return context.json(result, 200, {
-			"Cache-Control": "no-store",
-			"X-Content-Type-Options": "nosniff",
-		});
+		return context.json(result, 200, API_RESPONSE_HEADERS);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "変換中に予期しないエラーが発生しました。";
-		return context.json({ error: message }, 422, { "Cache-Control": "no-store" });
+		return context.json({ error: message }, 422, API_RESPONSE_HEADERS);
 	}
 });
 
