@@ -7,8 +7,8 @@ export default defineConfig({
 	description: "Prepare public web content as source-aware, LLM-ready Markdown.",
 	baseUrl: "/webforai-main-cloudflare",
 	logoUrl: {
-		light: "/images/logo-light.png",
-		dark: "/images/logo-dark.png",
+		light: "/images/logo-full-light.svg",
+		dark: "/images/logo-full-dark.svg",
 	},
 	iconUrl: {
 		light: "/images/logo-light.png",
@@ -34,7 +34,7 @@ export default defineConfig({
 		},
 	],
 	topNav: [
-		{ text: "Cloudflare Portal", link: "https://webforai-site.kitesurf.workers.dev/app/" },
+		{ text: "Cloudflare Portal", link: "/portal" },
 		{ text: "Getting Started", link: "/getting-started" },
 		{ text: "Cookbook", link: "/cookbook" },
 		{

@@ -4,79 +4,132 @@ content:
   width: 100%
 ---
 
-import { HomePage } from "vocs/components";
-
 <div className="lp-shell">
   <section className="lp-hero">
     <div className="lp-copy">
       <p className="lp-eyebrow">OPEN-SOURCE WEB CONTENT PREP</p>
       <h1>ウェブの本文を、<br />AI が使える知識へ。</h1>
-      <p className="lp-lead">webforai は、公開ウェブページの主コンテンツを取り出し、出典・変換条件・構造を保った <strong>LLM-ready Markdown</strong> に整えるためのオープンソース・ツールキットです。</p>
+      <p className="lp-lead">webforai は、公開ウェブページの主コンテンツを取り出し、見出し・リンク・コードなどの意味を保った <strong>LLM-ready Markdown</strong> に整える TypeScript ツールキットです。</p>
       <div className="lp-actions">
-        <a className="lp-primary" href="https://webforai-site.kitesurf.workers.dev/app/">Cloudflare ポータルを開く</a>
-        <HomePage.Button href="/getting-started">SDK・CLI を使う</HomePage.Button>
-        <HomePage.Button href="https://github.com/watanabe3tipapa/webforai-main-cloudflare">GitHub</HomePage.Button>
+        <a className="lp-primary" href="/getting-started">SDK・CLI を導入する</a>
+        <a className="lp-text-link" href="#output-preview">変換例を見る ↓</a>
+        <a className="lp-secondary-link" href="/portal">Cloudflare Portal <span>準備中</span></a>
       </div>
-      <p className="lp-caption">公開 URL、貼り付け HTML、Node.js、Cloudflare Workers に対応。認証ページや大規模クローリングは対象外です。</p>
+      <p className="lp-caption">今日から SDK / CLI を使えます。Cloudflare 上の Web-UI ポータルは、公開前のセットアップと API 仕様をドキュメントで案内しています。</p>
     </div>
 
-    <div className="lp-workflow" aria-label="webforai の処理フロー">
-      <p className="lp-workflow-label">ONE JOB, DONE WELL</p>
-      <h2>「このページを AI に渡せる形にしたい」を、数秒で完了。</h2>
-      <ol>
-        <li><span>01</span><div><strong>取得</strong><p>公開 URL または HTML を入力します。</p></div></li>
-        <li><span>02</span><div><strong>整理</strong><p>本文中心に抽出し、Markdown 構造へ変換します。</p></div></li>
-        <li><span>03</span><div><strong>利用</strong><p>出典付き Markdown をコピー、保存、アプリへ組み込みます。</p></div></li>
-      </ol>
+    <div className="lp-hero-demo" aria-label="HTML から AI-ready Markdown への変換例">
+      <div className="lp-demo-bar"><span></span><span></span><span></span><p>webforai / convert</p></div>
+      <div className="lp-demo-body">
+        <section>
+          <p className="lp-demo-label">BEFORE · PAGE HTML</p>
+          <pre><code>{`<nav>Pricing  Docs  Blog</nav>
+<div class="cookie">Accept all</div>
+<article>
+  <h1>Building with AI</h1>
+  <p>Useful context lives here.</p>
+</article>
+<footer>© Example</footer>`}</code></pre>
+        </section>
+        <div className="lp-demo-arrow" aria-hidden="true">→</div>
+        <section>
+          <p className="lp-demo-label is-output">AFTER · AI-READY MARKDOWN</p>
+          <pre><code>{`---
+source: "https://example.com"
+mode: ai
+---
+
+# Building with AI
+
+Useful context lives here.`}</code></pre>
+        </section>
+      </div>
+      <p className="lp-demo-note">本文に焦点を当て、プロンプトや RAG に渡しやすい構造へ変換します。</p>
     </div>
   </section>
 
-  <section className="lp-portal-banner">
-    <div>
-      <p className="lp-eyebrow">CLOUDFLARE WEB-UI PORTAL</p>
-      <h2>変換は、Cloudflare ポータルで。</h2>
-      <p>Web-UI ポータルは Cloudflare Worker 上で稼働します。URL または HTML を受け取り、サイズ・取得時間・公開 URL を検査してから、AI-ready または Reading モードの Markdown を返します。</p>
+  <section className="lp-trust" aria-label="webforai の主要な特性">
+    <div><strong>Apache-2.0</strong><span>オープンソースライセンス</span></div>
+    <div><strong>TypeScript</strong><span>SDK と CLI で利用可能</span></div>
+    <div><strong>Main content</strong><span>主コンテンツ抽出プリセット</span></div>
+    <div><strong>Markdown</strong><span>構造を保つポータブルな出力</span></div>
+  </section>
+
+  <section className="lp-section" id="use-cases">
+    <div className="lp-section-heading">
+      <p className="lp-eyebrow">BUILT FOR REAL WORKFLOWS</p>
+      <h2>コンテンツ取得の次にある、<br />AI の仕事を速くする。</h2>
+      <p>単に HTML を変換するのではなく、ページを次の処理へ渡せる状態に整えます。</p>
     </div>
-    <a className="lp-secondary" href="https://webforai-site.kitesurf.workers.dev/app/">変換ポータルへ →</a>
+    <div className="lp-usecase-grid">
+      <article>
+        <span className="lp-card-number">01</span>
+        <h3>RAG への取込み</h3>
+        <p>ナビゲーションや装飾を減らし、検索・分割・埋め込みに向いた本文中心の Markdown を準備します。</p>
+        <a href="/cookbook/structured-output">構造化出力の例 →</a>
+      </article>
+      <article>
+        <span className="lp-card-number">02</span>
+        <h3>調査・要約・翻訳</h3>
+        <p>URL の内容を、モデルが参照しやすい見出し構造に整えます。出典 URL は変換時に保持できます。</p>
+        <a href="/cookbook/translation">翻訳の例 →</a>
+      </article>
+      <article>
+        <span className="lp-card-number">03</span>
+        <h3>アプリへの組込み</h3>
+        <p>ライブラリとして使えば、抽出ルール、リンク、表、画像の扱いをアプリケーションごとに制御できます。</p>
+        <a href="/getting-started">SDK をはじめる →</a>
+      </article>
+    </div>
+  </section>
+
+  <section className="lp-section lp-output-section" id="output-preview">
+    <div className="lp-section-heading">
+      <p className="lp-eyebrow">THE OUTPUT IS THE PRODUCT</p>
+      <h2>取り込む前に、<br />中身をコントロールする。</h2>
+      <p>webforai は HTML → HAST → MDAST → Markdown の変換パイプラインを提供します。アプリ側で抽出と表現を制御できるため、画面スクレイピングの結果に依存せず、再現可能な前処理を組み立てられます。</p>
+    </div>
+    <div className="lp-output-points">
+      <div><span>01</span><div><h3>本文を優先</h3><p>標準の <code>takumi</code> プリセットは、記事やコンテンツ領域を手がかりに、ナビゲーションなどの周辺要素を抑えます。</p></div></div>
+      <div><span>02</span><div><h3>用途に合わせる</h3><p>リンクをテキスト化する、表を簡略化する、画像を隠すなど、モデルに渡す情報密度を選べます。</p></div></div>
+      <div><span>03</span><div><h3>次の処理へ渡す</h3><p>文字列の Markdown だけでなく MDAST を扱えるため、独自の抽出・分割・構造化ワークフローへ接続できます。</p></div></div>
+    </div>
+  </section>
+
+  <section className="lp-workflow-section">
+    <div className="lp-section-heading">
+      <p className="lp-eyebrow">ONE JOB, DONE WELL</p>
+      <h2>「このページを AI に渡せる形にしたい」を、迷わず完了。</h2>
+    </div>
+    <ol className="lp-workflow-list">
+      <li><span>01</span><div><strong>取得する</strong><p>Node.js、CLI、または Cloudflare Worker から、公開ページまたは HTML を受け取ります。</p></div></li>
+      <li><span>02</span><div><strong>整える</strong><p>主コンテンツを抽出し、Markdown の見出し・リンク・表・コードへ変換します。</p></div></li>
+      <li><span>03</span><div><strong>使う</strong><p>プロンプト、要約、RAG、翻訳、構造化抽出など、下流の AI 処理へ渡します。</p></div></li>
+    </ol>
+  </section>
+
+  <section className="lp-role-section">
+    <div>
+      <p className="lp-eyebrow">CLEAR SURFACES, CLEAR RESPONSIBILITIES</p>
+      <h2>用途ごとに、入口を分ける。</h2>
+      <p>プロダクトを知る場所と、コンテンツを変換する場所と、コードに組み込む場所を分けることで、利用者が迷わず次の一歩へ進める構成にしています。</p>
+    </div>
+    <div className="lp-role-grid">
+      <article><strong>GitHub Pages</strong><p>プロダクト紹介、導入ガイド、レシピ、API 仕様。</p><a href="/getting-started">ドキュメントを読む →</a></article>
+      <article><strong>npm package</strong><p>アプリケーションに組み込む TypeScript ライブラリと CLI。</p><a href="https://www.npmjs.com/package/webforai">npm を見る →</a></article>
+      <article><strong>Cloudflare Portal</strong><p>URL / HTML を Web-UI と API で変換するための公開準備中の入口。</p><a href="/portal">公開準備を確認 →</a></article>
+    </div>
+  </section>
+
+  <section className="lp-final-cta">
+    <div>
+      <p className="lp-eyebrow">START WITH THE FLOW YOU HAVE</p>
+      <h2>まずは、一つのページから。</h2>
+      <p>SDK、CLI、Cloudflare Workers のいずれからでも始められます。変換ルールと出力を自分のワークフローに合わせて育ててください。</p>
+    </div>
+    <div className="lp-final-actions">
+      <a className="lp-primary" href="/getting-started">SDK・CLI を導入する</a>
+      <a className="lp-text-link" href="https://github.com/watanabe3tipapa/webforai-main-cloudflare">GitHub でソースを見る →</a>
+    </div>
   </section>
 </div>
-
-<section className="max-w-screen-lg mx-auto vp-doc px-6 pb-16 md:px-8 md:pb-24">
-
-## 役割を明確に分ける
-
-| 場所 | 役割 | 利用者が得るもの |
-| --- | --- | --- |
-| **GitHub Pages** | プロダクト LP、導入ガイド、SDK / CLI / レシピのドキュメント | webforai が解く課題、使い方、ソースコードへの導線 |
-| **Cloudflare Worker ポータル** | URL / HTML を直接変換する Web-UI と API エッジ | LLM-ready Markdown のプレビュー、コピー、`.md` 保存、API 利用 |
-| **npm パッケージ** | アプリケーションに組み込める変換ライブラリ | TypeScript で再現可能な HTML → Markdown 処理 |
-
-> **webforai の役割は、ウェブを収集し尽くすことではありません。** 公開された 1 ページを、次の AI 処理に渡せる、見通しのよい Markdown に準備することです。
-
-## Cloudflare ポータルが返すもの
-
-変換ポータルは、YAML frontmatter に変換元 URL、変換モード、変換時刻を付与します。本文は用途に応じて二種類から選べます。**AI-ready** は主コンテンツを中心に画像・表・リンクの装飾を抑え、要約、分類、RAG の小さな入力に適します。**Reading** はリンク、画像、表の情報をできるだけ保持し、人が読み返す Markdown に適します。
-
-ポータルは HTTP(S) の公開ドメインのみを受け付け、ローカルネットワーク、IP アドレス、認証情報付き URL、非標準ポート、過大な入力を拒否します。JavaScript 描画、ログイン、CAPTCHA が必要なページには対応しません。入力するページの利用規約とコンテンツ利用条件は、利用者が確認してください。
-
-[Cloudflare ポータルを開く →](https://webforai-site.kitesurf.workers.dev/app/)
-
-## アプリケーションへの組込み
-
-```ts
-import { htmlToMarkdown } from "webforai";
-
-const markdown = htmlToMarkdown(html, {
-  baseUrl: "https://example.com/article",
-  // デフォルトで本文抽出プリセット takumi を適用
-  linkAsText: true,
-  tableAsText: true,
-  hideImage: true,
-});
-```
-
-Cloudflare ポータルの API は `POST /api/convert` です。`url` または `html` と、`ai` / `reading` の `mode` を JSON で送信すると、Markdown と変換メタデータを返します。
-
-[はじめる →](/getting-started) [Cloudflare Workers のレシピ →](/cookbook/cf-workers)
-
-</section>

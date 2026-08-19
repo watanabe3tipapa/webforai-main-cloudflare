@@ -4,9 +4,9 @@ title: Cloudflare Portal
 
 # Cloudflare Portal
 
-GitHub Pages は webforai の **LP とドキュメント**、Cloudflare Worker は実際に URL / HTML を変換する **Web-UI ポータルと API エッジ**です。ポータルは次の URL で公開します。
+GitHub Pages は webforai の **LP とドキュメント**、Cloudflare Worker は実際に URL / HTML を変換する **Web-UI ポータルと API エッジ**です。
 
-[ポータルを開く](https://webforai-site.kitesurf.workers.dev/app/)
+> **公開状況:** Web-UI ポータルは現在、Cloudflare へのデプロイ準備中です。公開前に 404 ページへ誘導しないよう、LP の CTA は SDK / CLI 導入とポータルのセットアップガイドに分けています。
 
 ## Web-UI の使い方
 
@@ -19,7 +19,8 @@ GitHub Pages は webforai の **LP とドキュメント**、Cloudflare Worker �
 ポータルと同じ Worker は、`POST /api/convert` で JSON API を提供します。本文は `url` または `html` のどちらか一方だけを指定します。
 
 ```bash
-curl -X POST https://webforai-site.kitesurf.workers.dev/api/convert \
+# Worker のデプロイ後、実際の Worker URL に置き換えてください。
+curl -X POST https://<worker-subdomain>.workers.dev/api/convert \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com/article",
